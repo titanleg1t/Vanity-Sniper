@@ -9,6 +9,7 @@ from pystyle import Colors, Colorate, Center
 class VanitySniper:
     def __init__(self):
         self.vanity = input(Colorate.Vertical(Colors.purple_to_blue, "what vanity u want? (no discord.gg/): "))
+        self.webhook = input(Colorate.Vertical(Colors.purple_to_blue, "enter webhook url: "))
         self.check_time = 15
         self.session = requests.Session()
         self.session.headers.update({
@@ -76,6 +77,39 @@ class VanitySniper:
         elif status == "info":
             print(f"{time_str} {Colorate.Vertical(Colors.blue, '[INFO]')} {msg}")
 
+    def send_webhook(self):
+        embed = {
+            "title": "Vanity Available!",
+            "description": f"The vanity `discord.gg/{self.vanity}` is now available!",
+            "color": 0x00ff00,
+            "fields": [
+                {
+                    "name": "Vanity",
+                    "value": f"discord.gg/{self.vanity}",
+                    "inline": True
+                },
+                {
+                    "name": "Timestamp",
+                    "value": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "inline": True
+                }
+            ],
+            "footer": {
+                "text": "Vanity Sniper by titanlegit"
+            }
+        }
+        data = {
+            "embeds": [embed]
+        }
+        try:
+            response = requests.post(self.webhook, json=data)
+            if response.status_code == 204:
+                self.log("info", "webhook sent!")
+            else:
+                self.log("error", f"webhook failed: {response.status_code}")
+        except Exception as e:
+            self.log("error", f"webhook error: {str(e)}")
+
     def wait(self, seconds):
         for i in range(seconds, 0, -1):
             wait_text = Colorate.Vertical(Colors.purple_to_blue, f"checking again in {i} sec...")
@@ -103,6 +137,7 @@ class VanitySniper:
 
                 if is_free is True:
                     self.log("free", f"discord.gg/{self.vanity} is free now!")
+                    self.send_webhook()
                     break
 
                 elif is_free is False:
